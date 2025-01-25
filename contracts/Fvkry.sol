@@ -71,7 +71,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Withdraw Assets
-    function transferAsset(uint256 _assetId, uint256 _amount, uint8 _vault) external  nonReentrant {
+    function transferAsset(uint256 _assetId, uint256 _amount) external  nonReentrant {
         require(_assetId < userLockedAssets[msg.sender].length, "The specified asset ID is invalid.");
         
         Lock storage lock = userLockedAssets[msg.sender][_assetId];
@@ -99,7 +99,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             IERC20(lock.token).safeTransfer(msg.sender, _amount);
         }
 
-        emit AssetTransfered(address(lock.token), _amount , _vault);
+        emit AssetTransfered(address(lock.token), _amount , lock.vault);
     }
 
 }

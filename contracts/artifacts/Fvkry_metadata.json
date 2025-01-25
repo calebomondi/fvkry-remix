@@ -200,11 +200,6 @@
 						"internalType": "uint256",
 						"name": "_amount",
 						"type": "uint256"
-					},
-					{
-						"internalType": "uint8",
-						"name": "_vault",
-						"type": "uint8"
 					}
 				],
 				"name": "transferAsset",
@@ -407,11 +402,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x75207d3fc0770be6aa7b5d149a0d98613637335cf1125f01b6d69f0d95e407da",
+			"keccak256": "0x61f63f931be7484c2e42d378e2dff8705986c73f4e30e6e448d3dfd4307bee41",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3e8f10eae769c2f7f61830f45b2f64b82bc7acca714506927793920815388a9a",
-				"dweb:/ipfs/QmZ436vPsWvwek7M4EbhbdiNgdP3GZmeTepThC9V2N74H3"
+				"bzz-raw://58d42ee16cf3e8d160a68dd02dc8f14eaf9c213041907eca5d3ab8b54713a8a5",
+				"dweb:/ipfs/Qmak7UCi83N8TVZSf63NzUZQVFdHAZeZ1aFwsk1gBQYrma"
 			]
 		}
 	},
