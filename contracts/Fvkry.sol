@@ -52,7 +52,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         require(_lockperiod > 0, "The lock period must be greater then zero");
 
         uint256 _tokenBalance = _token.balanceOf(msg.sender);
-        require (_amount >= _tokenBalance, "Not enough tokens to lock");
+        require (_amount <= _tokenBalance, "Not enough tokens to lock");
 
         // Transfer tokens from user to contract
         _token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -100,6 +100,15 @@ contract Fvkry is Ownable, ReentrancyGuard {
         }
 
         emit AssetTransfered(address(lock.token), _amount , lock.vault);
+    }
+
+    //view locked assets
+    function getContractTokenBalance(IERC20 token) external view returns (uint256) {
+        return token.balanceOf(address(this));
+    }
+
+    function getContractETHBalance() external view returns (uint256) {
+        return address(this).balance;
     }
 
 }

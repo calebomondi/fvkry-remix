@@ -124,6 +124,38 @@
 				"type": "event"
 			},
 			{
+				"inputs": [],
+				"name": "getContractETHBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "getContractTokenBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint8",
@@ -402,11 +434,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0xcedaebc3dea5c1a5e3dbd3f4a5febe0ef8476738d492416ad674cd920e1fb85a",
+			"keccak256": "0x233d413f1496c6f1505217242bafcfe94045691c3672bc5e5710da917242d778",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://83aeef98523fce92e574bea6f1b58a6445696f3376a47d5799151c9355ba5d39",
-				"dweb:/ipfs/QmQpMhfXj4BA72MdMcvv4f5QqQX3hk6hwxuhBpAJhUCKk2"
+				"bzz-raw://6187620fef4a40666ab47665f121ce6272eff4fe14982071b66c351f4c2220c3",
+				"dweb:/ipfs/QmdzXJvJ1XuLHdC6tgQZGposta9wCXb875Rj9NGt4hisDr"
 			]
 		}
 	},
