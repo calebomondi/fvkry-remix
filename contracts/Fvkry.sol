@@ -49,7 +49,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     function lockToken (IERC20 _token, uint256 _amount, uint8 _vault, uint256 _lockperiod) external nonReentrant {
         require(address(_token) != address(0), "Must provide a valid token address");
         require(_amount > 0, "Token amount must be greater then zero");
-        require(_lockperiod > 0, "The lockperiod must be greater then zero");
+        require(_lockperiod > 0, "The lock period must be greater then zero");
 
         uint256 _tokenBalance = _token.balanceOf(msg.sender);
         require (_amount >= _tokenBalance, "Not enough tokens to lock");
