@@ -38,6 +38,17 @@
 				"type": "error"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "SafeERC20FailedOperation",
+				"type": "error"
+			},
+			{
 				"anonymous": false,
 				"inputs": [
 					{
@@ -47,7 +58,7 @@
 						"type": "address"
 					},
 					{
-						"indexed": true,
+						"indexed": false,
 						"internalType": "uint256",
 						"name": "amount",
 						"type": "uint256"
@@ -65,7 +76,32 @@
 						"type": "uint256"
 					}
 				],
-				"name": "LockedAsset",
+				"name": "AssetLocked",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "vault",
+						"type": "uint8"
+					}
+				],
+				"name": "AssetTransfered",
 				"type": "event"
 			},
 			{
@@ -88,6 +124,52 @@
 				"type": "event"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_lockperiod",
+						"type": "uint256"
+					}
+				],
+				"name": "lockETH",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "_token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_lockperiod",
+						"type": "uint256"
+					}
+				],
+				"name": "lockToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "owner",
 				"outputs": [
@@ -103,6 +185,29 @@
 			{
 				"inputs": [],
 				"name": "renounceOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_assetId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					}
+				],
+				"name": "transferAsset",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -185,6 +290,11 @@
 				"ReentrancyGuardReentrantCall()": [
 					{
 						"details": "Unauthorized reentrant call."
+					}
+				],
+				"SafeERC20FailedOperation(address)": [
+					{
+						"details": "An operation with an ERC-20 token failed."
 					}
 				]
 			},
@@ -297,11 +407,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x33f2ed639c51a7833121174b3820751fac4cdce87a411d08b2374dcafebfd362",
+			"keccak256": "0x75207d3fc0770be6aa7b5d149a0d98613637335cf1125f01b6d69f0d95e407da",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://610f793da1f4a597e54c9c5f81ff65654ec6d0da7cc555db5e1ac53cd9305520",
-				"dweb:/ipfs/QmeCeQZMNJ1TCiK3xuHBEgYHohXZ7UA5vW9Jt5oHaHDQ1L"
+				"bzz-raw://3e8f10eae769c2f7f61830f45b2f64b82bc7acca714506927793920815388a9a",
+				"dweb:/ipfs/QmZ436vPsWvwek7M4EbhbdiNgdP3GZmeTepThC9V2N74H3"
 			]
 		}
 	},
