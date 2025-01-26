@@ -14,7 +14,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         address token;
         uint256 amount;
         uint256 lockEndTime;
-        uint8 vault;
+        string title;
         bool withdrawn;
         bool isNative;
     }
@@ -22,14 +22,14 @@ contract Fvkry is Ownable, ReentrancyGuard {
     mapping  (address => mapping (uint8 => Lock[])) public userLockedAssets;
 
     //Events
-    event AssetLocked(address indexed token, uint256 amount, uint8 vault,uint256 lockEndTime, uint256 timestamp);
-    event AssetTransfered(address indexed  token, uint256 amount, uint8 vault, uint256 timestamp);
-    event AssetAdded(address indexed token, uint256 amount, uint8 vault, uint256 timestamp);
+    event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
+    event AssetTransfered(address indexed  token, uint256 amount, string title, uint8 vault, uint256 timestamp);
+    event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint256 timestamp);
 
     constructor() Ownable(msg.sender) {}
 
     //Lock ETH
-    function lockETH(uint8 _vault, uint256 _lockperiod) external payable nonReentrant {
+    function lockETH(uint8 _vault, uint256 _lockperiod, string memory _title) external payable nonReentrant {
         require(msg.value > 0, "ETH to lock must a value greater than 0");
         require(_lockperiod >= 0, "The lockperiod must be greater then zero");
 
@@ -38,12 +38,12 @@ contract Fvkry is Ownable, ReentrancyGuard {
             token: address(0), 
             amount: msg.value,  
             lockEndTime: block.timestamp + _lockperiod,
-            vault: _vault,    
+            title: _title,    
             withdrawn: false,   
             isNative: true  
         }));      
         
-        emit AssetLocked(address(0), msg.value, _vault, block.timestamp + _lockperiod, block.timestamp);
+        emit AssetLocked(address(0), msg.value, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
     function addToLockedETH(uint8 _vault, uint32 _assetID) external payable  nonReentrant {
@@ -52,11 +52,11 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //get current balance and add to it
         userLockedAssets[msg.sender][_vault][_assetID].amount += msg.value;
 
-        emit AssetAdded(address(0), msg.value, _vault, block.timestamp);
+        emit AssetAdded(address(0), msg.value, userLockedAssets[msg.sender][_vault][_assetID].title, _vault, block.timestamp);
     }
 
     //Lock ERC20 Tokens
-    function lockToken (IERC20 _token, uint256 _amount, uint8 _vault, uint256 _lockperiod) external nonReentrant {
+    function lockToken (IERC20 _token, uint256 _amount, uint8 _vault, uint256 _lockperiod, string memory _title) external nonReentrant {
         require(address(_token) != address(0), "Must provide a valid token address");
         require(_amount > 0, "Token amount must be greater then zero");
         require(_lockperiod > 0, "The lock period must be greater then zero");
@@ -72,12 +72,12 @@ contract Fvkry is Ownable, ReentrancyGuard {
             token: address(_token), 
             amount: _amount,  
             lockEndTime: block.timestamp + _lockperiod,
-            vault: _vault,    
+            title: _title,    
             withdrawn: false,   
             isNative: false  
         }));
 
-        emit AssetLocked(address(_token), _amount, _vault, block.timestamp + _lockperiod, block.timestamp);
+        emit AssetLocked(address(_token), _amount, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
     function addToLockedTokens(IERC20 _token, uint32 _assetID, uint256 _amount, uint8 _vault) external  nonReentrant {
@@ -90,7 +90,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //update locked tokens balance
         userLockedAssets[msg.sender][_vault][_assetID].amount += _amount;
         
-        emit AssetAdded(address(_token), _amount, _vault, block.timestamp);
+        emit AssetAdded(address(_token), _amount, userLockedAssets[msg.sender][_vault][_assetID].title, _vault, block.timestamp);
     }
 
     //Withdraw Assets
@@ -122,7 +122,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             IERC20(lock.token).safeTransfer(msg.sender, _amount);
         }
 
-        emit AssetTransfered(address(lock.token), _amount , lock.vault, block.timestamp);
+        emit AssetTransfered(address(lock.token), _amount , lock.title, _vault, block.timestamp);
     }
 
     //view locked assets

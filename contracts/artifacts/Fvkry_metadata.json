@@ -65,6 +65,12 @@
 					},
 					{
 						"indexed": false,
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					},
+					{
+						"indexed": false,
 						"internalType": "uint8",
 						"name": "vault",
 						"type": "uint8"
@@ -93,6 +99,12 @@
 						"internalType": "uint256",
 						"name": "amount",
 						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
 					},
 					{
 						"indexed": false,
@@ -130,6 +142,12 @@
 						"internalType": "uint256",
 						"name": "amount",
 						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
 					},
 					{
 						"indexed": false,
@@ -272,9 +290,9 @@
 								"type": "uint256"
 							},
 							{
-								"internalType": "uint8",
-								"name": "vault",
-								"type": "uint8"
+								"internalType": "string",
+								"name": "title",
+								"type": "string"
 							},
 							{
 								"internalType": "bool",
@@ -306,6 +324,11 @@
 						"internalType": "uint256",
 						"name": "_lockperiod",
 						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_title",
+						"type": "string"
 					}
 				],
 				"name": "lockETH",
@@ -334,6 +357,11 @@
 						"internalType": "uint256",
 						"name": "_lockperiod",
 						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_title",
+						"type": "string"
 					}
 				],
 				"name": "lockToken",
@@ -433,9 +461,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "uint8",
-						"name": "vault",
-						"type": "uint8"
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
 					},
 					{
 						"internalType": "bool",
@@ -584,11 +612,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x7af6e30eab373b031df3bca588dca6884159f39541200e8cbf980388a207d7d6",
+			"keccak256": "0xfb934cd9d7ec429a3ed6caf4591e2bd591a4f089de3cf91ac15e40cc241cd8f6",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://c15f46e9aac77aeeab48e2f494f7bb37214b87a288b7c71afb479d02d5d371d6",
-				"dweb:/ipfs/QmZTmQVNHHS7Dj77b11J8tNUC7PtzS2ECjYESeP53X1yZ9"
+				"bzz-raw://be7974dc28b0e99883650cc9f0d8d39ba592f2d64d4690215247cd03b63d83f2",
+				"dweb:/ipfs/QmaEMbbPUgHb3rkBQUdi9D7D24os14ZWGx99MBn6Vd9otm"
 			]
 		}
 	},
