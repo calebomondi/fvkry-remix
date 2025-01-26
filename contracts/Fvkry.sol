@@ -33,17 +33,15 @@ contract Fvkry is Ownable, ReentrancyGuard {
         require(msg.value > 0, "ETH to lock must a value greater than 0");
         require(_lockperiod >= 0, "The lockperiod must be greater then zero");
 
-        if (_lockperiod != 0) {
-            // Create lock entry for ETH
-            userLockedAssets[msg.sender][_vault].push(Lock({
-                token: address(0), 
-                amount: msg.value,  
-                lockEndTime: block.timestamp + _lockperiod,
-                vault: _vault,    
-                withdrawn: false,   
-                isNative: true  
-            }));      
-        }
+        // Create lock entry for ETH
+        userLockedAssets[msg.sender][_vault].push(Lock({
+            token: address(0), 
+            amount: msg.value,  
+            lockEndTime: block.timestamp + _lockperiod,
+            vault: _vault,    
+            withdrawn: false,   
+            isNative: true  
+        }));      
         
         emit AssetLocked(address(0), msg.value, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
@@ -80,6 +78,19 @@ contract Fvkry is Ownable, ReentrancyGuard {
         }));
 
         emit AssetLocked(address(_token), _amount, _vault, block.timestamp + _lockperiod, block.timestamp);
+    }
+
+    function addToLockedTokens(IERC20 _token, uint32 _assetID, uint256 _amount, uint8 _vault) external  nonReentrant {
+        require(address(_token) != address(0), "Must provide a valid token address");
+        require(_amount > 0, "Token amount must be greater then zero");
+
+        //add to vault
+        _token.safeTransferFrom(msg.sender, address(this), _amount);
+
+        //update locked tokens balance
+        userLockedAssets[msg.sender][_vault][_assetID].amount += _amount;
+        
+        emit AssetAdded(address(_token), _amount, _vault, block.timestamp);
     }
 
     //Withdraw Assets

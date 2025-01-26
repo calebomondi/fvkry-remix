@@ -185,6 +185,34 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "_token",
+						"type": "address"
+					},
+					{
+						"internalType": "uint32",
+						"name": "_assetID",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					}
+				],
+				"name": "addToLockedTokens",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "getContractETHBalance",
 				"outputs": [
@@ -556,11 +584,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x680a50cb2593bef34a7416d9da8d1e13922cd451a7185545f99f73585d11a763",
+			"keccak256": "0x7af6e30eab373b031df3bca588dca6884159f39541200e8cbf980388a207d7d6",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d152d84ca70cf020c5f6e664beff3acb55292d123c1e40b02fea45d1e0c7e37f",
-				"dweb:/ipfs/Qmbg1msSHY7sRkSHzzjW71Yfo3LPg4Bx1grNQPBHc3Zxd8"
+				"bzz-raw://c15f46e9aac77aeeab48e2f494f7bb37214b87a288b7c71afb479d02d5d371d6",
+				"dweb:/ipfs/QmZTmQVNHHS7Dj77b11J8tNUC7PtzS2ECjYESeP53X1yZ9"
 			]
 		}
 	},
