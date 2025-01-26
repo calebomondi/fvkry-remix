@@ -672,11 +672,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0xbb992b7ff3a7427b1e0ab821c70a2a4edba337a7b01af60e360a7d6ccd1408ca",
+			"keccak256": "0x1bbac3c7b85ff16c88f6f4852f3a7cae817e5bede56845b76fc22ef09fc2520d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://03cb709989dd34bf8afd3980a88d6d0e28350384ae936ecd74525434defd8309",
-				"dweb:/ipfs/QmSP8YJHhSs53dkraTWvwK7vD4UtCTHVW9xmYhnE8Z64je"
+				"bzz-raw://d545f1c24bf0a1514dfcf45e8129ad27e67c5c0e3ce4fd25ef2bb8aa587bdddf",
+				"dweb:/ipfs/QmXMHdrQJyjou4warq74vfRwLs8pbPkPkxrgpv8qkLTsmZ"
 			]
 		}
 	},

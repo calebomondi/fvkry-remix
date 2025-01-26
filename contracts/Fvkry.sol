@@ -147,7 +147,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         require(_assetID < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
         require(block.timestamp > lock.lockEndTime, "The lock period has not yet expired!");
         
-        userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = _lockperiod;
+        userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = block.timestamp + _lockperiod;
 
         emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
     }
