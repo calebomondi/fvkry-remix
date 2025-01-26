@@ -19,30 +19,42 @@ contract Fvkry is Ownable, ReentrancyGuard {
         bool isNative;
     }
 
-    mapping  (address => Lock[]) public userLockedAssets;
+    mapping  (address => mapping (uint8 => Lock[])) public userLockedAssets;
 
     //Events
-    event AssetLocked(address indexed _token, uint256 amount, uint8 vault,uint256 lockEndTime);
-    event AssetTransfered(address indexed  _token, uint256 amount, uint8 vault);
+    event AssetLocked(address indexed token, uint256 amount, uint8 vault,uint256 lockEndTime, uint256 timestamp);
+    event AssetTransfered(address indexed  token, uint256 amount, uint8 vault, uint256 timestamp);
+    event AssetAdded(address indexed token, uint256 amount, uint8 vault, uint256 timestamp);
 
     constructor() Ownable(msg.sender) {}
 
     //Lock ETH
     function lockETH(uint8 _vault, uint256 _lockperiod) external payable nonReentrant {
         require(msg.value > 0, "ETH to lock must a value greater than 0");
-        require(_lockperiod > 0, "The lockperiod must be greater then zero");
+        require(_lockperiod >= 0, "The lockperiod must be greater then zero");
 
-        // Create lock entry for ETH
-        userLockedAssets[msg.sender].push(Lock({
-            token: address(0), 
-            amount: msg.value,  
-            lockEndTime: block.timestamp + _lockperiod,
-            vault: _vault,    
-            withdrawn: false,   
-            isNative: true  
-        }));      
+        if (_lockperiod != 0) {
+            // Create lock entry for ETH
+            userLockedAssets[msg.sender][_vault].push(Lock({
+                token: address(0), 
+                amount: msg.value,  
+                lockEndTime: block.timestamp + _lockperiod,
+                vault: _vault,    
+                withdrawn: false,   
+                isNative: true  
+            }));      
+        }
         
-        emit AssetLocked(address(0), msg.value, _vault, block.timestamp + _lockperiod);
+        emit AssetLocked(address(0), msg.value, _vault, block.timestamp + _lockperiod, block.timestamp);
+    }
+
+    function addToLockedETH(uint8 _vault, uint32 _assetID) external payable  nonReentrant {
+        require(msg.value > 0, "ETH to add to lock must be an amount greater than 0");
+
+        //get current balance and add to it
+        userLockedAssets[msg.sender][_vault][_assetID].amount += msg.value;
+
+        emit AssetAdded(address(0), msg.value, _vault, block.timestamp);
     }
 
     //Lock ERC20 Tokens
@@ -58,7 +70,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         _token.safeTransferFrom(msg.sender, address(this), _amount);
 
         // Create lock entry for Tokens 
-        userLockedAssets[msg.sender].push(Lock({
+        userLockedAssets[msg.sender][_vault].push(Lock({
             token: address(_token), 
             amount: _amount,  
             lockEndTime: block.timestamp + _lockperiod,
@@ -67,14 +79,14 @@ contract Fvkry is Ownable, ReentrancyGuard {
             isNative: false  
         }));
 
-        emit AssetLocked(address(_token), _amount, _vault, block.timestamp + _lockperiod);
+        emit AssetLocked(address(_token), _amount, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
     //Withdraw Assets
-    function transferAsset(uint256 _assetId, uint256 _amount) external  nonReentrant {
-        require(_assetId < userLockedAssets[msg.sender].length, "The specified asset ID is invalid.");
+    function transferAsset( uint32 _assetId,uint8 _vault, uint256 _amount) external  nonReentrant {
+        require(_assetId < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
         
-        Lock storage lock = userLockedAssets[msg.sender][_assetId];
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetId];
 
         require(!lock.withdrawn,"Assets have already been withdrawn!");
         require(block.timestamp > lock.lockEndTime, "The lock period has not yet expired!");
@@ -84,11 +96,11 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
         //mark as withdrawn
         if(updateBalance == 0) {
-            userLockedAssets[msg.sender][_assetId].withdrawn = true;
+            userLockedAssets[msg.sender][_vault][_assetId].withdrawn = true;
         } 
 
         //update balance  
-        userLockedAssets[msg.sender][_assetId].amount = updateBalance;    
+        userLockedAssets[msg.sender][_vault][_assetId].amount = updateBalance;    
 
         if(lock.isNative) {
             // Transfer ETH
@@ -99,7 +111,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             IERC20(lock.token).safeTransfer(msg.sender, _amount);
         }
 
-        emit AssetTransfered(address(lock.token), _amount , lock.vault);
+        emit AssetTransfered(address(lock.token), _amount , lock.vault, block.timestamp);
     }
 
     //view locked assets
@@ -112,8 +124,8 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Get User Locked Assets
-    function getUserLocks() public view returns (Lock[] memory) {
-        return userLockedAssets[msg.sender];
+    function getUserLocks(uint8 _vault) public view returns (Lock[] memory) {
+        return userLockedAssets[msg.sender][_vault];
     }
 
 }
