@@ -25,6 +25,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
     event AssetTransfered(address indexed  token, uint256 amount, string title, uint8 vault, uint256 timestamp);
     event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint256 timestamp);
+    event LockPeriodExtended(address indexed  token, uint8 vault, uint256 lockperiod, string title, uint256 timestamp);
 
     constructor() Ownable(msg.sender) {}
 
@@ -125,7 +126,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit AssetTransfered(address(lock.token), _amount , lock.title, _vault, block.timestamp);
     }
 
-    //view locked assets
+    //view contract locked assets
     function getContractTokenBalance(IERC20 token) external view returns (uint256) {
         return token.balanceOf(address(this));
     }
@@ -137,6 +138,18 @@ contract Fvkry is Ownable, ReentrancyGuard {
     //Get User Locked Assets
     function getUserLocks(uint8 _vault) public view returns (Lock[] memory) {
         return userLockedAssets[msg.sender][_vault];
+    }
+
+    //extend lock period after expiry
+    function extendLockPeriod(uint32 _assetID, uint8 _vault, uint256 _lockperiod) external  {
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+
+        require(_assetID < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
+        require(block.timestamp > lock.lockEndTime, "The lock period has not yet expired!");
+        
+        userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = _lockperiod;
+
+        emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
     }
 
 }
