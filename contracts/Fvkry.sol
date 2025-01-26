@@ -111,4 +111,9 @@ contract Fvkry is Ownable, ReentrancyGuard {
         return address(this).balance;
     }
 
+    //Get User Locked Assets
+    function getUserLocks() public view returns (Lock[] memory) {
+        return userLockedAssets[msg.sender];
+    }
+
 }

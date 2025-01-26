@@ -156,6 +156,51 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "getUserLocks",
+				"outputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "token",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "amount",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "lockEndTime",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint8",
+								"name": "vault",
+								"type": "uint8"
+							},
+							{
+								"internalType": "bool",
+								"name": "withdrawn",
+								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "isNative",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct Fvkry.Lock[]",
+						"name": "",
+						"type": "tuple[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint8",
@@ -434,11 +479,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x233d413f1496c6f1505217242bafcfe94045691c3672bc5e5710da917242d778",
+			"keccak256": "0xde298d645d1d5a819dc768575607a273f77049bba80b2a55fd617cd005748ecd",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://6187620fef4a40666ab47665f121ce6272eff4fe14982071b66c351f4c2220c3",
-				"dweb:/ipfs/QmdzXJvJ1XuLHdC6tgQZGposta9wCXb875Rj9NGt4hisDr"
+				"bzz-raw://6d70b1a3b59f1e51b71081e7f79feb1f699cbaabf17aa08832ba1d24f085ee79",
+				"dweb:/ipfs/QmYRTsmGm5qudrn6ks2VLMH3pYCUaa5jqqiMcMGHqtvPXf"
 			]
 		}
 	},
