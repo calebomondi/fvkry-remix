@@ -363,6 +363,11 @@
 								"internalType": "bool",
 								"name": "isNative",
 								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "makeAvailable",
+								"type": "bool"
 							}
 						],
 						"internalType": "struct Fvkry.Lock[]",
@@ -371,6 +376,29 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint32",
+						"name": "_assetID",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "_available",
+						"type": "bool"
+					}
+				],
+				"name": "goalReached",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -533,6 +561,11 @@
 					{
 						"internalType": "bool",
 						"name": "isNative",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "makeAvailable",
 						"type": "bool"
 					}
 				],
@@ -721,11 +754,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x1c2695ba853d49b63d5a14dacf949e2b9472626f83f206370d4e4ee9d19820ce",
+			"keccak256": "0x7a11efadd589dcabe5d1adc70d654a389eac5fdda1f4bfa8f16037f5aa81fefa",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b35dfb394052241c01adf24f423b53adcd147b2b65a624dc2446bf886c09d2b7",
-				"dweb:/ipfs/QmZXinpGZjmafQ6gJZs6FVzAVVr8UotUTAMzWxMfiy2ARG"
+				"bzz-raw://f0c40297059ba6cffe87ce8f41ee4b08c9d6ae50f8bf318428a4a1e48e114f49",
+				"dweb:/ipfs/QmSi9MSTLVRY1XPeY6u7TWSJbQPTdh4fpZu5kYfiXzY82R"
 			]
 		}
 	},

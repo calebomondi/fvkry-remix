@@ -17,6 +17,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         string title;
         bool withdrawn;
         bool isNative;
+        bool makeAvailable;
     }
 
     struct TransacHist {
@@ -50,7 +51,8 @@ contract Fvkry is Ownable, ReentrancyGuard {
             lockEndTime: block.timestamp + _lockperiod,
             title: _title,    
             withdrawn: false,   
-            isNative: true  
+            isNative: true,
+            makeAvailable: false 
         }));     
 
         //record transaction
@@ -92,7 +94,8 @@ contract Fvkry is Ownable, ReentrancyGuard {
             lockEndTime: block.timestamp + _lockperiod,
             title: _title,    
             withdrawn: false,   
-            isNative: false  
+            isNative: false,
+            makeAvailable: false
         }));
 
         //record transaction
@@ -126,7 +129,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetId];
 
         require(!lock.withdrawn,"Assets have already been withdrawn!");
-        require(block.timestamp > lock.lockEndTime, "The lock period has not yet expired!");
+        require(block.timestamp > lock.lockEndTime || lock.makeAvailable, "The lock period has not yet expired and the value has not reached set goal!");
 
         uint256  updateBalance = lock.amount - _amount;
         require (updateBalance >= 0,"Not enough assets to withdraw!");
@@ -192,4 +195,8 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
     }
 
+    //make available if value >= goal
+    function goalReached(uint32 _assetID, uint8 _vault, bool _available) external {        
+        userLockedAssets[msg.sender][_vault][_assetID].makeAvailable = _available;
+    }
 }
