@@ -19,7 +19,16 @@ contract Fvkry is Ownable, ReentrancyGuard {
         bool isNative;
     }
 
+    struct TransacHist {
+        address token;
+        uint256 amount;
+        string title;
+        bool withdrawn;
+        uint256 timestamp;
+    }
+
     mapping  (address => mapping (uint8 => Lock[])) public userLockedAssets;
+    mapping  (address => mapping (uint8 => TransacHist[])) public userTransactions;
 
     //Events
     event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
@@ -42,7 +51,10 @@ contract Fvkry is Ownable, ReentrancyGuard {
             title: _title,    
             withdrawn: false,   
             isNative: true  
-        }));      
+        }));     
+
+        //record transaction
+        recordTransac(address(0), _vault, msg.value, _title, false);
         
         emit AssetLocked(address(0), msg.value, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
@@ -50,10 +62,15 @@ contract Fvkry is Ownable, ReentrancyGuard {
     function addToLockedETH(uint8 _vault, uint32 _assetID) external payable  nonReentrant {
         require(msg.value > 0, "ETH to add to lock must be an amount greater than 0");
 
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+
         //get current balance and add to it
         userLockedAssets[msg.sender][_vault][_assetID].amount += msg.value;
 
-        emit AssetAdded(address(0), msg.value, userLockedAssets[msg.sender][_vault][_assetID].title, _vault, block.timestamp);
+        //record transaction
+        recordTransac(address(0), _vault, msg.value, lock.title, false);
+
+        emit AssetAdded(address(0), msg.value, lock.title, _vault, block.timestamp);
     }
 
     //Lock ERC20 Tokens
@@ -78,6 +95,9 @@ contract Fvkry is Ownable, ReentrancyGuard {
             isNative: false  
         }));
 
+        //record transaction
+        recordTransac(address(_token), _vault, _amount, _title, false);
+
         emit AssetLocked(address(_token), _amount, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
@@ -85,13 +105,18 @@ contract Fvkry is Ownable, ReentrancyGuard {
         require(address(_token) != address(0), "Must provide a valid token address");
         require(_amount > 0, "Token amount must be greater then zero");
 
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+
         //add to vault
         _token.safeTransferFrom(msg.sender, address(this), _amount);
 
         //update locked tokens balance
         userLockedAssets[msg.sender][_vault][_assetID].amount += _amount;
+
+        //record transaction
+        recordTransac(address(_token), _vault, _amount, lock.title, false);
         
-        emit AssetAdded(address(_token), _amount, userLockedAssets[msg.sender][_vault][_assetID].title, _vault, block.timestamp);
+        emit AssetAdded(address(_token), _amount, lock.title, _vault, block.timestamp);
     }
 
     //Withdraw Assets
@@ -118,12 +143,27 @@ contract Fvkry is Ownable, ReentrancyGuard {
             // Transfer ETH
             (bool success, ) = msg.sender.call{value: _amount}("");
             require(success, "ETH transfer failed");
+
+            recordTransac(address(0), _vault, _amount, lock.title, true);
         } else {
             // Transfer ERC20 tokens
             IERC20(lock.token).safeTransfer(msg.sender, _amount);
+
+            recordTransac(address(lock.token), _vault, _amount, lock.title, true);
         }
 
         emit AssetTransfered(address(lock.token), _amount , lock.title, _vault, block.timestamp);
+    }
+
+    //record transaction
+    function recordTransac(address _token, uint8 _vault, uint256 _amount, string memory _title, bool _withdraw) internal {
+        userTransactions[msg.sender][_vault].push(TransacHist({ 
+            token: _token,     
+            amount: _amount,  
+            title: _title,    
+            withdrawn: _withdraw,   
+            timestamp: block.timestamp       
+        }));
     }
 
     //view contract locked assets
