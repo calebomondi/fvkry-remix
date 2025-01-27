@@ -17,7 +17,6 @@ contract Fvkry is Ownable, ReentrancyGuard {
         string title;
         bool withdrawn;
         bool isNative;
-        bool makeAvailable;
     }
 
     struct TransacHist {
@@ -28,8 +27,8 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint256 timestamp;
     }
 
-    mapping  (address => mapping (uint8 => Lock[])) public userLockedAssets;
-    mapping  (address => mapping (uint8 => TransacHist[])) public userTransactions;
+    mapping (address => mapping (uint8 => Lock[])) public userLockedAssets;
+    mapping (address => mapping (uint8 => TransacHist[])) public userTransactions;
 
     //Events
     event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
@@ -51,8 +50,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             lockEndTime: block.timestamp + _lockperiod,
             title: _title,    
             withdrawn: false,   
-            isNative: true,
-            makeAvailable: false 
+            isNative: true
         }));     
 
         //record transaction
@@ -94,8 +92,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             lockEndTime: block.timestamp + _lockperiod,
             title: _title,    
             withdrawn: false,   
-            isNative: false,
-            makeAvailable: false
+            isNative: false
         }));
 
         //record transaction
@@ -123,13 +120,14 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Withdraw Assets
-    function transferAsset( uint32 _assetId,uint8 _vault, uint256 _amount) external  nonReentrant {
+    function transferAsset( uint32 _assetId,uint8 _vault, uint256 _amount, bool _goalReachedByValue) external  nonReentrant {
         require(_assetId < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
         
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetId];
 
         require(!lock.withdrawn,"Assets have already been withdrawn!");
-        require(block.timestamp > lock.lockEndTime || lock.makeAvailable, "The lock period has not yet expired and the value has not reached set goal!");
+        require(_amount <= lock.amount, "Not enough assets to withdraw!");
+        require(block.timestamp > lock.lockEndTime || _goalReachedByValue, "The lock period has not yet expired and the value has not reached set goal!");
 
         uint256  updateBalance = lock.amount - _amount;
         require (updateBalance >= 0,"Not enough assets to withdraw!");
@@ -195,8 +193,4 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
     }
 
-    //make available if value >= goal
-    function goalReached(uint32 _assetID, uint8 _vault, bool _available) external {        
-        userLockedAssets[msg.sender][_vault][_assetID].makeAvailable = _available;
-    }
 }
