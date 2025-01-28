@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Fvkry is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     
+    //structs
     struct Lock {
         address token;
         uint256 amount;
@@ -27,6 +28,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint256 timestamp;
     }
 
+    //mappings
     mapping (address => mapping (uint8 => Lock[])) public userLockedAssets;
     mapping (address => mapping (uint8 => TransacHist[])) public userTransactions;
 
