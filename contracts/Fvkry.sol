@@ -13,7 +13,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     //constants
     uint256 private constant MAX_LOCKDURATION = 1096 * 24 * 60 * 60;
     uint8 private constant MAX_VAULTS = 5;
-    uint8 private constant MAX_SOV_VAULTS = 100;
+    uint8 private constant MAX_SUB_VAULTS = 100;
 
     //structs
     struct Lock {
@@ -43,6 +43,9 @@ contract Fvkry is Ownable, ReentrancyGuard {
     event ContractUnpaused(uint256 timestamp);
     event BlackListed(address indexed  token);
     event UnBlackListed(address indexed token);
+    //---
+    event VaultDeleted(uint8 vault, uint8 assetID, uint256 timestamp);
+    event RenameVault(string newtitle, uint8 assetID, uint8 vault);
 
     //state variables
     bool public paused;
@@ -79,7 +82,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         string memory _title
     ) external payable nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
         uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
-        require(num_of_locks < MAX_SOV_VAULTS, "Vault Is Full!");
+        require(num_of_locks < MAX_SUB_VAULTS, "Vault Is Full!");
         require(msg.value > 0, "ETH to lock must a value greater than 0!");
         require(bytes(_title).length > 0 && bytes(_title).length <= 100, "Invalid Title Length!");
 
@@ -128,7 +131,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         string memory _title
     ) external nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
         uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
-        require(num_of_locks < MAX_SOV_VAULTS, "Vault Is Full!");
+        require(num_of_locks < MAX_SUB_VAULTS, "Vault Is Full!");
         require(address(_token) != address(0), "Invalid Token Address!");
         require(!blackListedToken[address(_token)],"Token Has Been Blacklisted!");
         require(_amount > 0, "Amount Must Be Greater Then Zero!");
@@ -299,4 +302,38 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit UnBlackListed(address(_token));
     }
 
+    //delete vault
+    function deleteVault(uint8 _vault, uint8 _assetID) external  {
+        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
+
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+        require(block.timestamp > lock.lockEndTime,"Vault Lock Period Not Yet Expired!");
+        require(lock.withdrawn, "Vault Not Empty!");
+
+        //get last index
+        uint256 lastIndex = userLockedAssets[msg.sender][_vault].length - 1;
+
+        //swap if asset ID not last index
+        if(_assetID != lastIndex) {
+            userLockedAssets[msg.sender][_vault][_assetID] = userLockedAssets[msg.sender][_vault][lastIndex];
+        }
+
+        //remove last element
+        userLockedAssets[msg.sender][_vault].pop();
+
+        emit VaultDeleted(_vault, _assetID, block.timestamp);
+    }
+
+    //rename vault
+    function renameVault(uint8 _vault, uint8 _assetID, string memory _newTitle) external {
+        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
+        require(bytes(_newTitle).length > 0 && bytes(_newTitle).length <= 100, "Invalid title length!");
+
+        //rename
+        userLockedAssets[msg.sender][_vault][_assetID].title = _newTitle;
+
+        emit  RenameVault(_newTitle, _assetID, _vault);
+    }
+
+    //transfer assets between vaults
 }

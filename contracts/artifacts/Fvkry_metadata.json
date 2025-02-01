@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.28+commit.7893614a"
+		"version": "0.8.26+commit.8a97fa7a"
 	},
 	"language": "Solidity",
 	"output": {
@@ -264,6 +264,31 @@
 				"anonymous": false,
 				"inputs": [
 					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "newtitle",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "assetID",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "vault",
+						"type": "uint8"
+					}
+				],
+				"name": "RenameVault",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
 						"indexed": true,
 						"internalType": "address",
 						"name": "token",
@@ -271,6 +296,31 @@
 					}
 				],
 				"name": "UnBlackListed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "vault",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "assetID",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "VaultDeleted",
 				"type": "event"
 			},
 			{
@@ -349,6 +399,24 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_assetID",
+						"type": "uint8"
+					}
+				],
+				"name": "deleteVault",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -544,6 +612,29 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_assetID",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "_newTitle",
+						"type": "string"
+					}
+				],
+				"name": "renameVault",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -850,11 +941,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x62e71ad06391f384017ad254bf8da1f12276201afe45a6c5deaf5064c4d568eb",
+			"keccak256": "0x7396645557c9410090f745d298291fbcef17838ac8744abc2a3b318ee81e2303",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f0d6c2c6296b1af6500883745eed4335a0eb17e3cf7bbf2272432c40bd2baab3",
-				"dweb:/ipfs/QmS8vtz5ixk48f2TRwLjqPbP15MY6s8Mo8CATNCyVxqmrG"
+				"bzz-raw://0f912d34618065e20b5bc1d68733e7769992554b346991b54ab33da8029edfde",
+				"dweb:/ipfs/QmeeDKZUchCYYXiQD8GMaM1ZfanMpRzYGTTMmi4nLJ1XsW"
 			]
 		}
 	},
