@@ -10,6 +10,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Fvkry is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     
+    //constants
+    uint256 private constant MAX_LOCKDURATION = 1096 * 24 * 60 * 60;
+    uint8 private constant MAX_VAULTS = 5;
+    uint8 private constant MAX_SOV_VAULTS = 100;
+
     //structs
     struct Lock {
         address token;
@@ -28,22 +33,55 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint256 timestamp;
     }
 
+    //Events
+    event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
+    event AssetWithdrawn(address indexed  token, uint256 amount, string title, uint8 vault, uint256 timestamp);
+    event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint256 timestamp);
+    event LockPeriodExtended(address indexed  token, uint8 vault, uint256 lockperiod, string title, uint256 timestamp);
+    //---
+    event ContractPaused(uint256 timestamp);
+    event ContractUnpaused(uint256 timestamp);
+    event BlackListed(address indexed  token);
+    event UnBlackListed(address indexed token);
+
+    //state variables
+    bool public paused;
+
     //mappings
     mapping (address => mapping (uint8 => Lock[])) public userLockedAssets;
     mapping (address => mapping (uint8 => TransacHist[])) public userTransactions;
+    mapping (address => bool) public blackListedToken;
 
-    //Events
-    event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
-    event AssetTransfered(address indexed  token, uint256 amount, string title, uint8 vault, uint256 timestamp);
-    event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint256 timestamp);
-    event LockPeriodExtended(address indexed  token, uint8 vault, uint256 lockperiod, string title, uint256 timestamp);
+    constructor() Ownable(msg.sender) {
+        paused = false;
+    }
 
-    constructor() Ownable(msg.sender) {}
+    //modifiers
+    modifier validLockPeriod(uint256 _lockperiod) {
+        require(_lockperiod > 0 && _lockperiod < MAX_LOCKDURATION, "Invalid Lock Period!");
+        _;
+    }
+
+    modifier validVault(uint8 _vault) {
+        require(_vault > 0 && _vault < 5, "Invalid Vault Number!");
+        _;
+    }
+
+    modifier contractNotPaused() {
+        require(!paused, "Contract Has Been Paused!");
+        _;
+    }
 
     //Lock ETH
-    function lockETH(uint8 _vault, uint256 _lockperiod, string memory _title) external payable nonReentrant {
-        require(msg.value > 0, "ETH to lock must a value greater than 0");
-        require(_lockperiod >= 0, "The lockperiod must be greater then zero");
+    function lockETH(
+        uint8 _vault, 
+        uint256 _lockperiod, 
+        string memory _title
+    ) external payable nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
+        uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
+        require(num_of_locks < MAX_SOV_VAULTS, "Vault Is Full!");
+        require(msg.value > 0, "ETH to lock must a value greater than 0!");
+        require(bytes(_title).length > 0 && bytes(_title).length <= 100, "Invalid Title Length!");
 
         // Create lock entry for ETH
         userLockedAssets[msg.sender][_vault].push(Lock({
@@ -61,10 +99,16 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit AssetLocked(address(0), msg.value, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
-    function addToLockedETH(uint8 _vault, uint32 _assetID) external payable  nonReentrant {
+    function addToLockedETH(
+        uint8 _vault, 
+        uint32 _assetID) 
+    external payable  nonReentrant contractNotPaused validVault(_vault) {
         require(msg.value > 0, "ETH to add to lock must be an amount greater than 0");
+        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
 
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+
+        require(lock.lockEndTime > block.timestamp, "This Vault Is Open, Lock Before Adding!");
 
         //get current balance and add to it
         userLockedAssets[msg.sender][_vault][_assetID].amount += msg.value;
@@ -76,13 +120,23 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Lock ERC20 Tokens
-    function lockToken (IERC20 _token, uint256 _amount, uint8 _vault, uint256 _lockperiod, string memory _title) external nonReentrant {
-        require(address(_token) != address(0), "Must provide a valid token address");
-        require(_amount > 0, "Token amount must be greater then zero");
-        require(_lockperiod > 0, "The lock period must be greater then zero");
+    function lockToken (
+        IERC20 _token, 
+        uint256 _amount, 
+        uint8 _vault, 
+        uint256 _lockperiod, 
+        string memory _title
+    ) external nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
+        uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
+        require(num_of_locks < MAX_SOV_VAULTS, "Vault Is Full!");
+        require(address(_token) != address(0), "Invalid Token Address!");
+        require(!blackListedToken[address(_token)],"Token Has Been Blacklisted!");
+        require(_amount > 0, "Amount Must Be Greater Then Zero!");
+        require(bytes(_title).length > 0 && bytes(_title).length <= 100, "Invalid title length!");
 
+        //check balance
         uint256 _tokenBalance = _token.balanceOf(msg.sender);
-        require (_amount <= _tokenBalance, "Not enough tokens to lock");
+        require (_amount <= _tokenBalance, "Inadequate Tokens To Lock!");
 
         // Transfer tokens from user to contract
         _token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -103,11 +157,21 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit AssetLocked(address(_token), _amount, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
     }
 
-    function addToLockedTokens(IERC20 _token, uint32 _assetID, uint256 _amount, uint8 _vault) external  nonReentrant {
-        require(address(_token) != address(0), "Must provide a valid token address");
-        require(_amount > 0, "Token amount must be greater then zero");
+    function addToLockedTokens(
+        IERC20 _token, 
+        uint32 _assetID, 
+        uint256 _amount, 
+        uint8 _vault
+    ) external  nonReentrant contractNotPaused validVault(_vault) {
+        require(address(_token) != address(0), "Invalid Token Address!");
+        require(!blackListedToken[address(_token)],"Token Has Been Blacklisted!");
+        require(_amount > 0, "Amount Must Be Greater Then Zero!");
 
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+
+        //check balance
+        uint256 _tokenBalance = _token.balanceOf(msg.sender);
+        require (_amount <= _tokenBalance, "Inadequate Tokens To Lock!");
 
         //add to vault
         _token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -122,8 +186,13 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Withdraw Assets
-    function transferAsset( uint32 _assetId,uint8 _vault, uint256 _amount, bool _goalReachedByValue) external  nonReentrant {
-        require(_assetId < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
+    function transferAsset( 
+        uint32 _assetId,
+        uint8 _vault, 
+        uint256 _amount, 
+        bool _goalReachedByValue
+    ) external  nonReentrant validVault(_vault) {
+        require(_assetId < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
         
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetId];
 
@@ -155,11 +224,17 @@ contract Fvkry is Ownable, ReentrancyGuard {
             recordTransac(address(lock.token), _vault, _amount, lock.title, true);
         }
 
-        emit AssetTransfered(address(lock.token), _amount , lock.title, _vault, block.timestamp);
+        emit AssetWithdrawn(address(lock.token), _amount , lock.title, _vault, block.timestamp);
     }
 
     //record transaction
-    function recordTransac(address _token, uint8 _vault, uint256 _amount, string memory _title, bool _withdraw) internal {
+    function recordTransac(
+        address _token, 
+        uint8 _vault, 
+        uint256 _amount, 
+        string memory _title, 
+        bool _withdraw
+    ) internal {
         userTransactions[msg.sender][_vault].push(TransacHist({ 
             token: _token,     
             amount: _amount,  
@@ -184,7 +259,11 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //extend lock period after expiry
-    function extendLockPeriod(uint32 _assetID, uint8 _vault, uint256 _lockperiod) external  {
+    function extendLockPeriod(
+        uint32 _assetID, 
+        uint8 _vault, 
+        uint256 _lockperiod
+    ) external nonReentrant {
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
         require(_assetID < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
@@ -193,6 +272,31 @@ contract Fvkry is Ownable, ReentrancyGuard {
         userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = block.timestamp + _lockperiod;
 
         emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
+    }
+
+    //emergencies executed by admin
+    function pauseContract() external onlyOwner {
+        require(!paused, "Contract Is Already Paused!");
+        paused = true;
+        emit ContractPaused(block.timestamp);
+    }
+
+    function unPauseContract() external  onlyOwner {
+        require(paused,"Contract Is Already UnPaused!");
+        paused = false;
+        emit ContractUnpaused(block.timestamp);
+    }
+
+    function blackListToken(IERC20 _token) external  onlyOwner {
+        require(!blackListedToken[address(_token)],"Token Already Blacklisted!");
+        blackListedToken[address(_token)] = true;
+        emit BlackListed(address(_token));
+    }
+
+    function unBlackListToken(IERC20 _token) external onlyOwner  {
+        require(blackListedToken[address(_token)],"Token Is Not BlackListed!");
+        blackListedToken[address(_token)] = false;
+        emit UnBlackListed(address(_token));
     }
 
 }

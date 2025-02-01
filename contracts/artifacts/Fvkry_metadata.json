@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.26+commit.8a97fa7a"
+		"version": "0.8.28+commit.7893614a"
 	},
 	"language": "Solidity",
 	"output": {
@@ -162,7 +162,46 @@
 						"type": "uint256"
 					}
 				],
-				"name": "AssetTransfered",
+				"name": "AssetWithdrawn",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "BlackListed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "ContractPaused",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					}
+				],
+				"name": "ContractUnpaused",
 				"type": "event"
 			},
 			{
@@ -222,6 +261,19 @@
 				"type": "event"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "UnBlackListed",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint8",
@@ -265,6 +317,38 @@
 				"name": "addToLockedTokens",
 				"outputs": [],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"name": "blackListToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "blackListedToken",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -444,6 +528,26 @@
 			},
 			{
 				"inputs": [],
+				"name": "pauseContract",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "paused",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -486,6 +590,26 @@
 					}
 				],
 				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"name": "unBlackListToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "unPauseContract",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -726,11 +850,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0xbe92de62bb022fe5c721c234b45a3561205933bc173ef1f4089190209ea73098",
+			"keccak256": "0x62e71ad06391f384017ad254bf8da1f12276201afe45a6c5deaf5064c4d568eb",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://cdafcd61de4fd2fed4fe7fb16c88a9a6a21cf7bd1ccd06642dfd526305dbe636",
-				"dweb:/ipfs/QmPs6b1tY8gFfpsximU5LMQ9WeQAS7SzTEn4nkxPARC3QF"
+				"bzz-raw://f0d6c2c6296b1af6500883745eed4335a0eb17e3cf7bbf2272432c40bd2baab3",
+				"dweb:/ipfs/QmS8vtz5ixk48f2TRwLjqPbP15MY6s8Mo8CATNCyVxqmrG"
 			]
 		}
 	},
