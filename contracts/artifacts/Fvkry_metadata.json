@@ -132,25 +132,8 @@
 				"type": "error"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					}
-				],
-				"name": "SubVaultNotLocked",
-				"type": "error"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					}
-				],
-				"name": "SubVaultStillLocked",
+				"inputs": [],
+				"name": "SubVaultLockPeriodError",
 				"type": "error"
 			},
 			{
@@ -732,9 +715,9 @@
 								"type": "uint256"
 							},
 							{
-								"internalType": "uint256",
+								"internalType": "uint32",
 								"name": "lockEndTime",
-								"type": "uint256"
+								"type": "uint32"
 							},
 							{
 								"internalType": "string",
@@ -976,9 +959,9 @@
 						"type": "uint256"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "lockEndTime",
-						"type": "uint256"
+						"type": "uint32"
 					},
 					{
 						"internalType": "string",
@@ -1040,9 +1023,9 @@
 						"type": "bool"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"stateMutability": "view",
@@ -1209,11 +1192,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x4a64eff4b179948027f95d67f1e4bc079f07151f9c614df854206ac6edd5d702",
+			"keccak256": "0x63871919151e171f2be13431e38716a1e3b7f34a52058e2b21fd3e09939caa2d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://f3b2e7488f23bfb3f42995f1a622a1c431b52dc8ab9fafa9d1ad4aaa7ce95f66",
-				"dweb:/ipfs/QmeZmjWaDoy4oUicxbpVP73Hsg2wP4YRrywmbP2WtAydWP"
+				"bzz-raw://8aa5ece5737bef96b6684060eaaf77e838999214a209ec22448da1a27c4bfc11",
+				"dweb:/ipfs/QmPnNB8fUsUZuuLnjsVnuibnHhMxKEuHXy5YKG2gJ82JKL"
 			]
 		}
 	},

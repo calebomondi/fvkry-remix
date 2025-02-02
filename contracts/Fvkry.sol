@@ -25,8 +25,7 @@ error InvalidVaultNumber();
 error ContractPausedAlready();
 error ContractNotpaused();
 error TokenAddressesDontMatch(address from, address to);
-error SubVaultStillLocked(string title);
-error SubVaultNotLocked(string title);
+error SubVaultLockPeriodError();
 
 contract Fvkry is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -40,7 +39,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     struct Lock {
         address token;
         uint256 amount;
-        uint256 lockEndTime;
+        uint32 lockEndTime;
         string title;
         bool withdrawn;
         bool isNative;
@@ -51,7 +50,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint256 amount;
         string title;
         bool withdrawn;
-        uint256 timestamp;
+        uint32 timestamp;
     }
 
     //Events
@@ -111,7 +110,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         userLockedAssets[msg.sender][_vault].push(Lock({
             token: address(0), 
             amount: msg.value,  
-            lockEndTime: block.timestamp + _lockperiod,
+            lockEndTime: uint32(block.timestamp + _lockperiod),
             title: _title,    
             withdrawn: false,   
             isNative: true
@@ -168,7 +167,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         userLockedAssets[msg.sender][_vault].push(Lock({
             token: address(_token), 
             amount: _amount,  
-            lockEndTime: block.timestamp + _lockperiod,
+            lockEndTime: uint32(block.timestamp + _lockperiod),
             title: _title,    
             withdrawn: false,   
             isNative: false
@@ -266,7 +265,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             amount: _amount,  
             title: _title,    
             withdrawn: _withdraw,   
-            timestamp: block.timestamp       
+            timestamp: uint32(block.timestamp)   
         }));
     }
 
@@ -296,7 +295,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
         if(lock.lockEndTime < block.timestamp) revert LockPeriodExpired();
         
-        userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = block.timestamp + _lockperiod;
+        userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = uint32(block.timestamp + _lockperiod);
 
         emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, uint32(block.timestamp));
     }
@@ -360,15 +359,18 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
     //transfer assets between vaults and sub-vaults
     function transferAsset(uint256 _amount, uint8 _fromVault, uint8 _fromAssetID, uint8 _toVault, uint8 _toAssetID) external nonReentrant {
-        if(_fromAssetID > userLockedAssets[msg.sender][_fromVault].length) revert InvalidAssetID();
-        if(_toAssetID > userLockedAssets[msg.sender][_toVault].length) revert InvalidAssetID();
+        if(
+            _fromAssetID > userLockedAssets[msg.sender][_fromVault].length && 
+            _toAssetID > userLockedAssets[msg.sender][_toVault].length
+        ) revert InvalidAssetID();
 
         Lock storage fLock = userLockedAssets[msg.sender][_fromVault][_fromAssetID];
         Lock storage tLock = userLockedAssets[msg.sender][_toVault][_toAssetID];
 
         if(address(fLock.token) != address(tLock.token)) revert TokenAddressesDontMatch(address(fLock.token),address(tLock.token));
-        if(block.timestamp < fLock.lockEndTime) revert SubVaultStillLocked(fLock.title);
-        if(block.timestamp > tLock.lockEndTime) revert SubVaultNotLocked(tLock.title);
+        if(
+            block.timestamp < fLock.lockEndTime && block.timestamp > tLock.lockEndTime
+        ) revert SubVaultLockPeriodError();
         if(fLock.withdrawn) revert VaultHasBeenWithdrawn();
         if(_amount > fLock.amount) revert NotEnoughToWithdraw(address(fLock.token));
 
