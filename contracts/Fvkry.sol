@@ -46,6 +46,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     //---
     event VaultDeleted(uint8 vault, uint8 assetID, uint256 timestamp);
     event RenameVault(string newtitle, uint8 assetID, uint8 vault);
+    event TransferAsset(address indexed token, uint256 amount, uint8 fromVault, uint8 fromAssetID, uint8 toVault, uint8 toAssetID);
 
     //state variables
     bool public paused;
@@ -189,7 +190,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Withdraw Assets
-    function transferAsset( 
+    function withdrawAsset( 
         uint32 _assetId,
         uint8 _vault, 
         uint256 _amount, 
@@ -266,7 +267,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint32 _assetID, 
         uint8 _vault, 
         uint256 _lockperiod
-    ) external nonReentrant {
+    ) external {
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
         require(_assetID < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
@@ -335,5 +336,30 @@ contract Fvkry is Ownable, ReentrancyGuard {
         emit  RenameVault(_newTitle, _assetID, _vault);
     }
 
-    //transfer assets between vaults
+    //transfer assets between vaults and sub-vaults
+    function transferAsset(uint256 _amount, uint8 _fromVault, uint8 _fromAssetID, uint8 _toVault, uint8 _toAssetID) external nonReentrant {
+        require(_fromAssetID < userLockedAssets[msg.sender][_fromVault].length, "Invalid Transfer From Asset ID!");
+        require(_toAssetID < userLockedAssets[msg.sender][_toVault].length, "Invalid Transfer To Asset ID!");
+
+        Lock storage fLock = userLockedAssets[msg.sender][_fromVault][_fromAssetID];
+        Lock storage tLock = userLockedAssets[msg.sender][_toVault][_toAssetID];
+
+        require(address(fLock.token) == address(tLock.token), "Token Addresses Don't Match!");
+        require(block.timestamp > fLock.lockEndTime, "Transfer From Sub-Vault Is Still Locked!");
+        require(block.timestamp < tLock.lockEndTime, "Transfer To Sub-Vault Is Not Locked!");
+        require(!fLock.withdrawn, "Vault Has No Assets!");
+        require(_amount <= fLock.amount, "Insufficient Assets To Transfer!");
+
+        //transfer
+        userLockedAssets[msg.sender][_fromVault][_fromAssetID].amount -= _amount;
+
+        if (userLockedAssets[msg.sender][_fromVault][_fromAssetID].amount == 0) {
+            userLockedAssets[msg.sender][_fromVault][_fromAssetID].withdrawn = true;
+        }
+
+        userLockedAssets[msg.sender][_toVault][_toAssetID].amount += _amount;
+
+        emit TransferAsset(address(fLock.token),_amount,_fromVault,_fromAssetID,_toVault,_toAssetID);
+    }
+
 }

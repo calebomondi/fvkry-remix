@@ -293,6 +293,49 @@
 						"internalType": "address",
 						"name": "token",
 						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "fromVault",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "fromAssetID",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "toVault",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "toAssetID",
+						"type": "uint8"
+					}
+				],
+				"name": "TransferAsset",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
 					}
 				],
 				"name": "UnBlackListed",
@@ -647,24 +690,29 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint32",
-						"name": "_assetId",
-						"type": "uint32"
-					},
-					{
-						"internalType": "uint8",
-						"name": "_vault",
-						"type": "uint8"
-					},
-					{
 						"internalType": "uint256",
 						"name": "_amount",
 						"type": "uint256"
 					},
 					{
-						"internalType": "bool",
-						"name": "_goalReachedByValue",
-						"type": "bool"
+						"internalType": "uint8",
+						"name": "_fromVault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_fromAssetID",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_toVault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_toAssetID",
+						"type": "uint8"
 					}
 				],
 				"name": "transferAsset",
@@ -807,6 +855,34 @@
 				],
 				"stateMutability": "view",
 				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint32",
+						"name": "_assetId",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_vault",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "_goalReachedByValue",
+						"type": "bool"
+					}
+				],
+				"name": "withdrawAsset",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
 			}
 		],
 		"devdoc": {
@@ -941,11 +1017,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x7396645557c9410090f745d298291fbcef17838ac8744abc2a3b318ee81e2303",
+			"keccak256": "0x73257a872a9975fcde043bb38401d2ce18192e9b2bd90faa93c6e5f0ee9b64e7",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0f912d34618065e20b5bc1d68733e7769992554b346991b54ab33da8029edfde",
-				"dweb:/ipfs/QmeeDKZUchCYYXiQD8GMaM1ZfanMpRzYGTTMmi4nLJ1XsW"
+				"bzz-raw://3dc7fad2198ddce08669ca53bc477cdeb6b74f075510fba21b14aa5363d3a09b",
+				"dweb:/ipfs/QmecGt9VNfPmnxfbU91AAgEVt2WgDGBVEbJSkNEPzygRkQ"
 			]
 		}
 	},
