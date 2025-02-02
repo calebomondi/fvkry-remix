@@ -11,6 +11,89 @@
 				"type": "constructor"
 			},
 			{
+				"inputs": [],
+				"name": "AmountBeGreaterThan0",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ContractNotpaused",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ContractPausedAlready",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ETHTransferFailed",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "InadequateTokenBalance",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidAssetID",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidLockPeriod",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "InvalidTokenAddress",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidVaultNumber",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "LockPeriodExpired",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "LockPeriodNotExpired",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "LockPeriodNotExpiredOrGoalNotReached",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "asset",
+						"type": "address"
+					}
+				],
+				"name": "NotEnoughToWithdraw",
+				"type": "error"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -49,6 +132,76 @@
 				"type": "error"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					}
+				],
+				"name": "SubVaultNotLocked",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					}
+				],
+				"name": "SubVaultStillLocked",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "TokenAddressesDontMatch",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "TokenIsBlackListed",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "TokenIsNotBlackListed",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "VaultHasBeenWithdrawn",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "VaultIsFull",
+				"type": "error"
+			},
+			{
 				"anonymous": false,
 				"inputs": [
 					{
@@ -77,9 +230,9 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "AssetAdded",
@@ -114,15 +267,15 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "lockEndTime",
-						"type": "uint256"
+						"type": "uint32"
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "AssetLocked",
@@ -157,9 +310,9 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "AssetWithdrawn",
@@ -183,9 +336,9 @@
 				"inputs": [
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "ContractPaused",
@@ -196,9 +349,9 @@
 				"inputs": [
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "ContractUnpaused",
@@ -221,9 +374,9 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "lockperiod",
-						"type": "uint256"
+						"type": "uint32"
 					},
 					{
 						"indexed": false,
@@ -233,9 +386,9 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "LockPeriodExtended",
@@ -358,13 +511,52 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "timestamp",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "VaultDeleted",
 				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "MAX_LOCKDURATION",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MAX_SUB_VAULTS",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "MAX_VAULTS",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
 			},
 			{
 				"inputs": [
@@ -475,9 +667,9 @@
 						"type": "uint8"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "_lockperiod",
-						"type": "uint256"
+						"type": "uint32"
 					}
 				],
 				"name": "extendLockPeriod",
@@ -576,9 +768,9 @@
 						"type": "uint8"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint32",
 						"name": "_lockperiod",
-						"type": "uint256"
+						"type": "uint32"
 					},
 					{
 						"internalType": "string",
@@ -860,7 +1052,7 @@
 				"inputs": [
 					{
 						"internalType": "uint32",
-						"name": "_assetId",
+						"name": "_assetID",
 						"type": "uint32"
 					},
 					{
@@ -1017,11 +1209,11 @@
 			]
 		},
 		"contracts/Fvkry.sol": {
-			"keccak256": "0x73257a872a9975fcde043bb38401d2ce18192e9b2bd90faa93c6e5f0ee9b64e7",
+			"keccak256": "0x4a64eff4b179948027f95d67f1e4bc079f07151f9c614df854206ac6edd5d702",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://3dc7fad2198ddce08669ca53bc477cdeb6b74f075510fba21b14aa5363d3a09b",
-				"dweb:/ipfs/QmecGt9VNfPmnxfbU91AAgEVt2WgDGBVEbJSkNEPzygRkQ"
+				"bzz-raw://f3b2e7488f23bfb3f42995f1a622a1c431b52dc8ab9fafa9d1ad4aaa7ce95f66",
+				"dweb:/ipfs/QmeZmjWaDoy4oUicxbpVP73Hsg2wP4YRrywmbP2WtAydWP"
 			]
 		}
 	},

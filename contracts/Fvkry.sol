@@ -7,13 +7,34 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+error VaultIsFull();
+error AmountBeGreaterThan0();
+error InvalidAssetID();
+error LockPeriodExpired();
+error LockPeriodNotExpired();
+error LockPeriodNotExpiredOrGoalNotReached();       
+error InvalidTokenAddress(address token);
+error TokenIsBlackListed(address token);
+error TokenIsNotBlackListed(address token);
+error InadequateTokenBalance(address token);
+error VaultHasBeenWithdrawn();
+error NotEnoughToWithdraw(address asset);
+error ETHTransferFailed();
+error InvalidLockPeriod();
+error InvalidVaultNumber();
+error ContractPausedAlready();
+error ContractNotpaused();
+error TokenAddressesDontMatch(address from, address to);
+error SubVaultStillLocked(string title);
+error SubVaultNotLocked(string title);
+
 contract Fvkry is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
     
     //constants
-    uint256 private constant MAX_LOCKDURATION = 1096 * 24 * 60 * 60;
-    uint8 private constant MAX_VAULTS = 5;
-    uint8 private constant MAX_SUB_VAULTS = 100;
+    uint256 immutable public  MAX_LOCKDURATION = 1096 * 24 * 60 * 60;
+    uint8 immutable public  MAX_VAULTS = 5;
+    uint8 immutable public  MAX_SUB_VAULTS = 100;
 
     //structs
     struct Lock {
@@ -34,17 +55,17 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     //Events
-    event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint256 lockEndTime, uint256 timestamp);
-    event AssetWithdrawn(address indexed  token, uint256 amount, string title, uint8 vault, uint256 timestamp);
-    event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint256 timestamp);
-    event LockPeriodExtended(address indexed  token, uint8 vault, uint256 lockperiod, string title, uint256 timestamp);
+    event AssetLocked(address indexed token, uint256 amount, string title, uint8 vault,uint32 lockEndTime, uint32 timestamp);
+    event AssetWithdrawn(address indexed  token, uint256 amount, string title, uint8 vault, uint32 timestamp);
+    event AssetAdded(address indexed token, uint256 amount, string title, uint8 vault, uint32 timestamp);
+    event LockPeriodExtended(address indexed  token, uint8 vault, uint32 lockperiod, string title, uint32 timestamp);
     //---
-    event ContractPaused(uint256 timestamp);
-    event ContractUnpaused(uint256 timestamp);
+    event ContractPaused(uint32 timestamp);
+    event ContractUnpaused(uint32 timestamp);
     event BlackListed(address indexed  token);
     event UnBlackListed(address indexed token);
     //---
-    event VaultDeleted(uint8 vault, uint8 assetID, uint256 timestamp);
+    event VaultDeleted(uint8 vault, uint8 assetID, uint32 timestamp);
     event RenameVault(string newtitle, uint8 assetID, uint8 vault);
     event TransferAsset(address indexed token, uint256 amount, uint8 fromVault, uint8 fromAssetID, uint8 toVault, uint8 toAssetID);
 
@@ -62,30 +83,29 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
     //modifiers
     modifier validLockPeriod(uint256 _lockperiod) {
-        require(_lockperiod > 0 && _lockperiod < MAX_LOCKDURATION, "Invalid Lock Period!");
+        if(_lockperiod == 0 || _lockperiod > MAX_LOCKDURATION) revert InvalidLockPeriod();
         _;
     }
 
     modifier validVault(uint8 _vault) {
-        require(_vault > 0 && _vault < 5, "Invalid Vault Number!");
+        if(_vault < 0 || _vault > 4) revert InvalidVaultNumber();
         _;
     }
 
     modifier contractNotPaused() {
-        require(!paused, "Contract Has Been Paused!");
+        if(paused) revert ContractPausedAlready();
         _;
     }
 
     //Lock ETH
     function lockETH(
         uint8 _vault, 
-        uint256 _lockperiod, 
+        uint32 _lockperiod, 
         string memory _title
     ) external payable nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
         uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
-        require(num_of_locks < MAX_SUB_VAULTS, "Vault Is Full!");
-        require(msg.value > 0, "ETH to lock must a value greater than 0!");
-        require(bytes(_title).length > 0 && bytes(_title).length <= 100, "Invalid Title Length!");
+        if(num_of_locks >= MAX_SUB_VAULTS) revert VaultIsFull();
+        if(msg.value <= 0) revert AmountBeGreaterThan0();
 
         // Create lock entry for ETH
         userLockedAssets[msg.sender][_vault].push(Lock({
@@ -100,19 +120,19 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //record transaction
         recordTransac(address(0), _vault, msg.value, _title, false);
         
-        emit AssetLocked(address(0), msg.value, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
+        emit AssetLocked(address(0), msg.value, _title, _vault, uint32(block.timestamp + _lockperiod), uint32(block.timestamp));
     }
 
     function addToLockedETH(
         uint8 _vault, 
         uint32 _assetID) 
     external payable  nonReentrant contractNotPaused validVault(_vault) {
-        require(msg.value > 0, "ETH to add to lock must be an amount greater than 0");
-        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
+        if(msg.value <= 0) revert AmountBeGreaterThan0();
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
 
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
-        require(lock.lockEndTime > block.timestamp, "This Vault Is Open, Lock Before Adding!");
+        if(lock.lockEndTime < block.timestamp) revert LockPeriodExpired();
 
         //get current balance and add to it
         userLockedAssets[msg.sender][_vault][_assetID].amount += msg.value;
@@ -120,7 +140,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //record transaction
         recordTransac(address(0), _vault, msg.value, lock.title, false);
 
-        emit AssetAdded(address(0), msg.value, lock.title, _vault, block.timestamp);
+        emit AssetAdded(address(0), msg.value, lock.title, _vault, uint32(block.timestamp));
     }
 
     //Lock ERC20 Tokens
@@ -132,15 +152,14 @@ contract Fvkry is Ownable, ReentrancyGuard {
         string memory _title
     ) external nonReentrant contractNotPaused validVault(_vault) validLockPeriod(_lockperiod) {
         uint256 num_of_locks = userLockedAssets[msg.sender][_vault].length;
-        require(num_of_locks < MAX_SUB_VAULTS, "Vault Is Full!");
-        require(address(_token) != address(0), "Invalid Token Address!");
-        require(!blackListedToken[address(_token)],"Token Has Been Blacklisted!");
-        require(_amount > 0, "Amount Must Be Greater Then Zero!");
-        require(bytes(_title).length > 0 && bytes(_title).length <= 100, "Invalid title length!");
+        if(num_of_locks >= MAX_SUB_VAULTS) revert VaultIsFull();
+        if(address(_token) == address(0)) revert InvalidTokenAddress(address(_token));
+        if(blackListedToken[address(_token)]) revert TokenIsBlackListed(address(_token));
+        if(_amount <= 0) revert AmountBeGreaterThan0();
 
         //check balance
         uint256 _tokenBalance = _token.balanceOf(msg.sender);
-        require (_amount <= _tokenBalance, "Inadequate Tokens To Lock!");
+        if(_amount > _tokenBalance) revert InadequateTokenBalance(address(_token));
 
         // Transfer tokens from user to contract
         _token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -158,7 +177,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //record transaction
         recordTransac(address(_token), _vault, _amount, _title, false);
 
-        emit AssetLocked(address(_token), _amount, _title, _vault, block.timestamp + _lockperiod, block.timestamp);
+        emit AssetLocked(address(_token), _amount, _title, _vault, uint32(block.timestamp + _lockperiod), uint32(block.timestamp));
     }
 
     function addToLockedTokens(
@@ -167,15 +186,19 @@ contract Fvkry is Ownable, ReentrancyGuard {
         uint256 _amount, 
         uint8 _vault
     ) external  nonReentrant contractNotPaused validVault(_vault) {
-        require(address(_token) != address(0), "Invalid Token Address!");
-        require(!blackListedToken[address(_token)],"Token Has Been Blacklisted!");
-        require(_amount > 0, "Amount Must Be Greater Then Zero!");
+        if(address(_token) == address(0)) revert InvalidTokenAddress(address(_token));
+        if(blackListedToken[address(_token)]) revert TokenIsBlackListed(address(_token));
+        if(_amount <= 0) revert AmountBeGreaterThan0();
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
 
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
+        
+        if(lock.lockEndTime < block.timestamp) revert LockPeriodExpired();
+
 
         //check balance
         uint256 _tokenBalance = _token.balanceOf(msg.sender);
-        require (_amount <= _tokenBalance, "Inadequate Tokens To Lock!");
+        if(_amount > _tokenBalance) revert InadequateTokenBalance(address(_token));
 
         //add to vault
         _token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -186,39 +209,38 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //record transaction
         recordTransac(address(_token), _vault, _amount, lock.title, false);
         
-        emit AssetAdded(address(_token), _amount, lock.title, _vault, block.timestamp);
+        emit AssetAdded(address(_token), _amount, lock.title, _vault, uint32(block.timestamp));
     }
 
     //Withdraw Assets
     function withdrawAsset( 
-        uint32 _assetId,
+        uint32 _assetID,
         uint8 _vault, 
         uint256 _amount, 
         bool _goalReachedByValue
     ) external  nonReentrant validVault(_vault) {
-        require(_assetId < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
         
-        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetId];
+        Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
-        require(!lock.withdrawn,"Assets have already been withdrawn!");
-        require(_amount <= lock.amount, "Not enough assets to withdraw!");
-        require(block.timestamp > lock.lockEndTime || _goalReachedByValue, "The lock period has not yet expired and the value has not reached set goal!");
+        if(lock.withdrawn) revert VaultHasBeenWithdrawn();
+        if(_amount > lock.amount) revert NotEnoughToWithdraw(address(lock.token));
+        if(block.timestamp < lock.lockEndTime || _goalReachedByValue != true) revert LockPeriodNotExpiredOrGoalNotReached();
 
         uint256  updateBalance = lock.amount - _amount;
-        require (updateBalance >= 0,"Not enough assets to withdraw!");
 
         //mark as withdrawn
         if(updateBalance == 0) {
-            userLockedAssets[msg.sender][_vault][_assetId].withdrawn = true;
+            userLockedAssets[msg.sender][_vault][_assetID].withdrawn = true;
         } 
 
         //update balance  
-        userLockedAssets[msg.sender][_vault][_assetId].amount = updateBalance;    
+        userLockedAssets[msg.sender][_vault][_assetID].amount = updateBalance;    
 
         if(lock.isNative) {
             // Transfer ETH
             (bool success, ) = msg.sender.call{value: _amount}("");
-            require(success, "ETH transfer failed");
+            if(!success) revert ETHTransferFailed();
 
             recordTransac(address(0), _vault, _amount, lock.title, true);
         } else {
@@ -228,7 +250,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
             recordTransac(address(lock.token), _vault, _amount, lock.title, true);
         }
 
-        emit AssetWithdrawn(address(lock.token), _amount , lock.title, _vault, block.timestamp);
+        emit AssetWithdrawn(address(lock.token), _amount , lock.title, _vault, uint32(block.timestamp));
     }
 
     //record transaction
@@ -259,6 +281,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
     //Get User Locked Assets
     function getUserLocks(uint8 _vault) public view returns (Lock[] memory) {
+        if(_vault < 0 || _vault > 4) revert InvalidVaultNumber();
         return userLockedAssets[msg.sender][_vault];
     }
 
@@ -266,50 +289,50 @@ contract Fvkry is Ownable, ReentrancyGuard {
     function extendLockPeriod(
         uint32 _assetID, 
         uint8 _vault, 
-        uint256 _lockperiod
+        uint32 _lockperiod
     ) external {
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
-        require(_assetID < userLockedAssets[msg.sender][_vault].length, "The specified asset ID is invalid.");
-        require(block.timestamp > lock.lockEndTime, "The lock period has not yet expired!");
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
+        if(lock.lockEndTime < block.timestamp) revert LockPeriodExpired();
         
         userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = block.timestamp + _lockperiod;
 
-        emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, block.timestamp);
+        emit LockPeriodExtended(lock.token, _vault, _lockperiod, lock.title, uint32(block.timestamp));
     }
 
     //emergencies executed by admin
     function pauseContract() external onlyOwner {
-        require(!paused, "Contract Is Already Paused!");
+        if(paused) revert ContractPausedAlready();
         paused = true;
-        emit ContractPaused(block.timestamp);
+        emit ContractPaused(uint32(block.timestamp));
     }
 
     function unPauseContract() external  onlyOwner {
-        require(paused,"Contract Is Already UnPaused!");
+        if(!paused) revert ContractNotpaused();
         paused = false;
-        emit ContractUnpaused(block.timestamp);
+        emit ContractUnpaused(uint32(block.timestamp));
     }
 
     function blackListToken(IERC20 _token) external  onlyOwner {
-        require(!blackListedToken[address(_token)],"Token Already Blacklisted!");
+        if(blackListedToken[address(_token)]) revert TokenIsBlackListed(address(_token));
         blackListedToken[address(_token)] = true;
         emit BlackListed(address(_token));
     }
 
     function unBlackListToken(IERC20 _token) external onlyOwner  {
-        require(blackListedToken[address(_token)],"Token Is Not BlackListed!");
+        if(!blackListedToken[address(_token)]) revert TokenIsNotBlackListed(address(_token));
         blackListedToken[address(_token)] = false;
         emit UnBlackListed(address(_token));
     }
 
     //delete vault
     function deleteVault(uint8 _vault, uint8 _assetID) external  {
-        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
 
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
-        require(block.timestamp > lock.lockEndTime,"Vault Lock Period Not Yet Expired!");
-        require(lock.withdrawn, "Vault Not Empty!");
+        if(lock.lockEndTime > block.timestamp) revert LockPeriodNotExpired();
+        if(!lock.withdrawn) revert VaultHasBeenWithdrawn();
 
         //get last index
         uint256 lastIndex = userLockedAssets[msg.sender][_vault].length - 1;
@@ -322,13 +345,12 @@ contract Fvkry is Ownable, ReentrancyGuard {
         //remove last element
         userLockedAssets[msg.sender][_vault].pop();
 
-        emit VaultDeleted(_vault, _assetID, block.timestamp);
+        emit VaultDeleted(_vault, _assetID, uint32(block.timestamp));
     }
 
     //rename vault
     function renameVault(uint8 _vault, uint8 _assetID, string memory _newTitle) external {
-        require(_assetID < userLockedAssets[msg.sender][_vault].length, "Invalid Asset ID!");
-        require(bytes(_newTitle).length > 0 && bytes(_newTitle).length <= 100, "Invalid title length!");
+        if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
 
         //rename
         userLockedAssets[msg.sender][_vault][_assetID].title = _newTitle;
@@ -338,17 +360,17 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
     //transfer assets between vaults and sub-vaults
     function transferAsset(uint256 _amount, uint8 _fromVault, uint8 _fromAssetID, uint8 _toVault, uint8 _toAssetID) external nonReentrant {
-        require(_fromAssetID < userLockedAssets[msg.sender][_fromVault].length, "Invalid Transfer From Asset ID!");
-        require(_toAssetID < userLockedAssets[msg.sender][_toVault].length, "Invalid Transfer To Asset ID!");
+        if(_fromAssetID > userLockedAssets[msg.sender][_fromVault].length) revert InvalidAssetID();
+        if(_toAssetID > userLockedAssets[msg.sender][_toVault].length) revert InvalidAssetID();
 
         Lock storage fLock = userLockedAssets[msg.sender][_fromVault][_fromAssetID];
         Lock storage tLock = userLockedAssets[msg.sender][_toVault][_toAssetID];
 
-        require(address(fLock.token) == address(tLock.token), "Token Addresses Don't Match!");
-        require(block.timestamp > fLock.lockEndTime, "Transfer From Sub-Vault Is Still Locked!");
-        require(block.timestamp < tLock.lockEndTime, "Transfer To Sub-Vault Is Not Locked!");
-        require(!fLock.withdrawn, "Vault Has No Assets!");
-        require(_amount <= fLock.amount, "Insufficient Assets To Transfer!");
+        if(address(fLock.token) != address(tLock.token)) revert TokenAddressesDontMatch(address(fLock.token),address(tLock.token));
+        if(block.timestamp < fLock.lockEndTime) revert SubVaultStillLocked(fLock.title);
+        if(block.timestamp > tLock.lockEndTime) revert SubVaultNotLocked(tLock.title);
+        if(fLock.withdrawn) revert VaultHasBeenWithdrawn();
+        if(_amount > fLock.amount) revert NotEnoughToWithdraw(address(fLock.token));
 
         //transfer
         userLockedAssets[msg.sender][_fromVault][_fromAssetID].amount -= _amount;
