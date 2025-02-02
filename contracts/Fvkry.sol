@@ -12,7 +12,7 @@ error AmountBeGreaterThan0();
 error InvalidAssetID();
 error LockPeriodExpired();
 error LockPeriodNotExpired();
-error LockPeriodNotExpiredOrGoalNotReached();       
+error LockPeriodNotExpiredAndGoalNotReached();       
 error InvalidTokenAddress(address token);
 error TokenIsBlackListed(address token);
 error TokenIsNotBlackListed(address token);
@@ -87,7 +87,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
     }
 
     modifier validVault(uint8 _vault) {
-        if(_vault < 0 || _vault > 4) revert InvalidVaultNumber();
+        if(_vault <= 0 || _vault > 4) revert InvalidVaultNumber();
         _;
     }
 
@@ -224,7 +224,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
 
         if(lock.withdrawn) revert VaultHasBeenWithdrawn();
         if(_amount > lock.amount) revert NotEnoughToWithdraw(address(lock.token));
-        if(block.timestamp < lock.lockEndTime || _goalReachedByValue != true) revert LockPeriodNotExpiredOrGoalNotReached();
+        if(block.timestamp < lock.lockEndTime && _goalReachedByValue != true) revert LockPeriodNotExpiredAndGoalNotReached();
 
         uint256  updateBalance = lock.amount - _amount;
 
@@ -293,7 +293,7 @@ contract Fvkry is Ownable, ReentrancyGuard {
         Lock storage lock = userLockedAssets[msg.sender][_vault][_assetID];
 
         if(_assetID > userLockedAssets[msg.sender][_vault].length) revert InvalidAssetID();
-        if(lock.lockEndTime < block.timestamp) revert LockPeriodExpired();
+        if(lock.lockEndTime > block.timestamp) revert LockPeriodNotExpired();
         
         userLockedAssets[msg.sender][_vault][_assetID].lockEndTime = uint32(block.timestamp + _lockperiod);
 
